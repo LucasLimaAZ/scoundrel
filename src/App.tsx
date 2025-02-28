@@ -1,25 +1,28 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Room from "./components/Room";
 import useHooks from "./shared/hooks";
 import { suitEmote } from "./shared/helper";
+import Dialog from "./components/Dialog";
 
 function App() {
   const {
-    newRoom,
     room,
     bareHands,
     discard,
     equipment,
     life,
     setBareHands,
-    setEquipment,
     remainingCards,
     useCard,
+    isModalOpen,
+    resetGame,
+    refillRoom,
+    roomCounter,
   } = useHooks();
 
   const handleDeckClick = () => {
     if (!room?.cards?.length) {
-      newRoom();
+      refillRoom(true);
     }
   };
 
@@ -34,6 +37,9 @@ function App() {
     >
       <Box sx={{ display: "flex", justifyContent: "space-around" }}>
         <Box>
+          <Box>
+            <Typography>Room: {roomCounter}</Typography>
+          </Box>
           <Box onClick={handleDeckClick} sx={{ fontSize: "48px" }}>
             🎴 {remainingCards.length}
           </Box>
@@ -94,6 +100,7 @@ function App() {
           )}
         </Box>
       </Box>
+      <Dialog onClose={resetGame} open={!!isModalOpen} />
     </Box>
   );
 }

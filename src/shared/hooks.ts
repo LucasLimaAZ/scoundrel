@@ -8,13 +8,27 @@ const useHooks = () => {
   const [equipment, setEquipment] = useState<Card>();
   const [discard, setDiscard] = useState<Card[]>();
   const [life, setLife] = useState<number>(20);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>();
   const [remainingCards, setRemainingCards] = useState<Card[]>(Cards);
+  const [roomCounter, setRoomCounter] = useState<number>(0);
 
-  const newRoom = () => {
+  const refillRoom = (newRoom?: boolean, existingCard?: Card) => {
+    setRoomCounter(roomCounter + 1);
     const shuffledCards = [...remainingCards].sort(() => Math.random() - 0.5);
-    const selectedCards: Card[] = shuffledCards.slice(0, 4);
+    const newCards = shuffledCards.slice(0, newRoom ? 4 : 3);
 
-    setRoom({ cards: selectedCards });
+    setRoom({ cards: [existingCard as Card, ...newCards] });
+
+    setRemainingCards((prevRemaining) =>
+      prevRemaining.filter((c) => !newCards.includes(c))
+    );
+  };
+
+  const removeCard = (card: Card) => {
+    if (room) {
+      const updatedRoomCards = room.cards.filter((c) => c !== card);
+      setRoom({ cards: updatedRoomCards });
+    }
   };
 
   const useCard = (card: Card) => {
@@ -30,9 +44,10 @@ const useHooks = () => {
 
     if (card.suitId === Suit.Clubs || card.suitId === Suit.Spades) {
       if (
-        !bareHands &&
-        equipment?.lastKilled &&
-        card.number >= equipment?.lastKilled?.number
+        (!bareHands &&
+          equipment?.lastKilled &&
+          card.number >= equipment?.lastKilled?.number) ||
+        (!bareHands && !equipment)
       ) {
         return;
       } else {
@@ -40,23 +55,11 @@ const useHooks = () => {
       }
     }
 
-    const updatedRoomCards = room.cards.filter((c) => c !== card);
-    setRoom({ cards: updatedRoomCards });
-
+    removeCard(card);
     setDiscard((prevDiscard) => [...(prevDiscard || []), card]);
 
-    setRemainingCards((prevRemaining) =>
-      prevRemaining.filter((c) => c !== card)
-    );
-
-    if (updatedRoomCards.length === 1 && remainingCards.length >= 3) {
-      const shuffledCards = [...remainingCards].sort(() => Math.random() - 0.5);
-      const newCards = shuffledCards.slice(0, 3);
-      setRoom({ cards: [...updatedRoomCards, ...newCards] });
-
-      setRemainingCards((prevRemaining) =>
-        prevRemaining.filter((c) => !newCards.includes(c))
-      );
+    if (room.cards.length === 2) {
+      refillRoom();
     }
   };
 
@@ -72,6 +75,7 @@ const useHooks = () => {
   const battleCard = (card: Card) => {
     if (bareHands) {
       const newLife = life - card.number;
+      if (newLife <= 0) setIsModalOpen(true);
       setLife(newLife >= 0 ? newLife : 0);
       return;
     }
@@ -79,6 +83,7 @@ const useHooks = () => {
     if (equipment) {
       if (card.number > equipment.number) {
         const damage = card.number - equipment.number;
+        if (life - damage <= 0) setIsModalOpen(true);
         setLife(life - damage);
       }
 
@@ -86,9 +91,17 @@ const useHooks = () => {
     }
   };
 
+  const resetGame = () => {
+    setLife(20);
+    setRemainingCards(Cards);
+    setEquipment(undefined);
+    setIsModalOpen(false);
+    setDiscard(undefined);
+    setRoom(undefined);
+  };
+
   return {
     room,
-    newRoom,
     useCard,
     bareHands,
     setBareHands,
@@ -97,6 +110,11 @@ const useHooks = () => {
     life,
     discard,
     remainingCards,
+    isModalOpen,
+    setIsModalOpen,
+    resetGame,
+    refillRoom,
+    roomCounter,
   };
 };
 
