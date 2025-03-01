@@ -2,7 +2,9 @@ import { Box, Button, Typography } from "@mui/material";
 import Room from "./components/Room";
 import useHooks from "./shared/hooks";
 import { suitEmote } from "./shared/helper";
-import Dialog from "./components/Dialog";
+import LostDialog from "./components/LostDialog";
+import { useEffect } from "react";
+import VictoryDialog from "./components/VictoryDialog";
 
 function App() {
   const {
@@ -11,20 +13,21 @@ function App() {
     discard,
     equipment,
     life,
-    setBareHands,
     remainingCards,
-    useCard,
-    isModalOpen,
+    activateCard,
+    isLostModalOpen,
     resetGame,
-    refillRoom,
     roomCounter,
+    handleDeckClick,
+    initializeDeck,
+    scoopRoom,
+    lastScoop,
+    usedPotion,
+    isVictoryModalOpen,
+    handleBareHandsClick,
   } = useHooks();
 
-  const handleDeckClick = () => {
-    if (!room?.cards?.length) {
-      refillRoom(true);
-    }
-  };
+  useEffect(() => initializeDeck(), []);
 
   return (
     <Box
@@ -33,43 +36,69 @@ function App() {
         color: "#e1e1e1",
         minHeight: "92vh",
         padding: "4% 2% 0 2%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "space-around" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingX: "200px",
+        }}
+      >
         <Box>
           <Box>
             <Typography>Room: {roomCounter}</Typography>
           </Box>
-          <Box onClick={handleDeckClick} sx={{ fontSize: "48px" }}>
+          <Box
+            onClick={handleDeckClick}
+            sx={{ fontSize: "48px", cursor: "pointer" }}
+          >
             🎴 {remainingCards.length}
           </Box>
           <Box sx={{ paddingTop: "16px" }}>
             <Button
+              onClick={scoopRoom}
               sx={{ fontSize: "24px", backgroundColor: "gray" }}
               variant="contained"
+              disabled={lastScoop || !room?.cards?.length}
             >
               Run 💨
             </Button>
           </Box>
         </Box>
-        <Room useCard={useCard} room={room || { cards: [] }} />
-        <Box sx={{ fontSize: "48px" }}>{discard?.length || 0} 🪦</Box>
+        <Box sx={{ fontSize: "48px" }}>{discard?.length || 0}/44 🪦</Box>
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <Room activateCard={activateCard} room={room || { cards: [] }} />
       </Box>
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-around",
+          justifyContent: "space-between",
           alignItems: "center",
-          paddingTop: "100px",
+          paddingX: "200px",
+          paddingBottom: "80px",
+          transition: "2s",
         }}
       >
         <Box sx={{ fontSize: "48px" }}>❤️ {life}</Box>
+        {usedPotion && <Box sx={{ fontSize: "48px" }}>💖🕑</Box>}
         <Box sx={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <Box
-            onClick={() => setBareHands(!bareHands)}
-            sx={{ cursor: "pointer", fontSize: "48px" }}
-          >
-            {bareHands ? "👊" : "⚔️"}
+          <Box>
+            <Box
+              onClick={handleBareHandsClick}
+              sx={{ cursor: "pointer", fontSize: "56px" }}
+            >
+              {bareHands ? "👊" : equipment?.emoji}
+            </Box>
+            {equipment?.lastKilled && (
+              <Box sx={{ fontSize: "24px", marginTop: "16px" }}>
+                ⛓️‍💥 {equipment?.lastKilled?.number}
+              </Box>
+            )}
           </Box>
           <Box
             sx={{
@@ -93,14 +122,10 @@ function App() {
               </>
             ) : null}
           </Box>
-          {equipment?.lastKilled && (
-            <Box sx={{ fontSize: "36px" }}>
-              ⛓️‍💥 {equipment?.lastKilled?.number}
-            </Box>
-          )}
         </Box>
       </Box>
-      <Dialog onClose={resetGame} open={!!isModalOpen} />
+      <LostDialog onClose={resetGame} open={!!isLostModalOpen} />
+      <VictoryDialog onClose={resetGame} open={!!isVictoryModalOpen} />
     </Box>
   );
 }

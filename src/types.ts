@@ -7,6 +7,7 @@ export type Card = {
   number: number;
   suitId: Suit;
   lastKilled?: Card;
+  emoji?: string;
 };
 
 export enum Suit {
