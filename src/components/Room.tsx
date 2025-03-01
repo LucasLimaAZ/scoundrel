@@ -93,6 +93,10 @@ const Room = ({ room, activateCard }: RoomProps) => {
               transformOrigin: "center bottom",
               boxShadow: "2px 4px 8px rgba(0, 0, 0, 0.3)",
               zIndex: "1",
+              transition: "ease 0.2s",
+              ":hover": {
+                marginTop: "-10px",
+              },
             }}
           >
             {card ? (

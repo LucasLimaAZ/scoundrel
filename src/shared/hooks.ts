@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Room, Card, Suit } from "../types";
 import { weaponsEmojis, monstersEmojis } from "./helper";
 import Cards from "../shared/cards.json";
@@ -15,6 +15,28 @@ const useHooks = () => {
   const [roomCounter, setRoomCounter] = useState<number>(0);
   const [lastScoop, setLastScoop] = useState<boolean>(false);
   const [usedPotion, setUsedPotion] = useState<boolean>(false);
+  const [lifeDifference, setLifeDifference] = useState<number>(0);
+  const [animateBattle, setAnimateBattle] = useState<boolean>();
+  const [animate, setAnimate] = useState(false);
+  const [prevLifeDifference, setPrevLifeDifference] = useState(0);
+  const [scoopRefillTriggered, setScoopRefillTriggered] = useState(false);
+
+  useEffect(() => {
+    if (lifeDifference !== 0) {
+      setPrevLifeDifference(lifeDifference);
+      setAnimate(true);
+      const timeout = setTimeout(() => setAnimate(false), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [lifeDifference]);
+
+  useEffect(() => {
+    if (scoopRefillTriggered) {
+      refillRoom(true);
+      setLastScoop(true);
+      setScoopRefillTriggered(false);
+    }
+  }, [remainingCards, scoopRefillTriggered]);
 
   const initializeDeck = () => {
     const shuffledDeck = [...Cards].sort(() => Math.random() - 0.5);
@@ -58,20 +80,23 @@ const useHooks = () => {
   };
 
   const scoopRoom = () => {
+    if (room && room.cards.length < 4) return;
     if (!room || !room.cards.length || lastScoop) return;
 
-    setRemainingCards((prevRemaining) => [...prevRemaining, ...room.cards]);
+    setRemainingCards((prevRemainingCards) => [
+      ...prevRemainingCards,
+      ...room.cards,
+    ]);
+
+    setScoopRefillTriggered(true);
     setRoom(undefined);
-    refillRoom(true);
-    setLastScoop(true);
   };
 
   const removeCard = (card: Card) => {
     if (room) {
       const updatedRoomCards = room.cards.filter((c) => c !== card);
       setRoom({ cards: updatedRoomCards });
-
-      if (remainingCards.length < 1 && room?.cards?.length === 1 && life > 0) {
+      if (updatedRoomCards.length < 1) {
         setIsVictoryModalOpen(true);
       }
     }
@@ -114,12 +139,17 @@ const useHooks = () => {
 
   const heal = (card: Card) => {
     const total = card.number + life;
+    setLifeDifference(card.number);
     setLife(Math.min(total, 20));
   };
 
   const battleCard = (card: Card) => {
+    setAnimateBattle(true);
+    setTimeout(() => setAnimateBattle(false), 400);
+
     if (bareHands) {
       const newLife = life - card.number;
+      setLifeDifference(-card.number);
       if (newLife <= 0) setIsLostModalOpen(true);
       setLife(Math.max(newLife, 0));
       return;
@@ -128,6 +158,7 @@ const useHooks = () => {
     if (equipment) {
       if (card.number > equipment.number) {
         const damage = card.number - equipment.number;
+        setLifeDifference(-damage);
         if (life - damage <= 0) setIsLostModalOpen(true);
         setLife(life - damage);
       }
@@ -148,6 +179,7 @@ const useHooks = () => {
 
   const resetGame = () => {
     setLife(20);
+    setBareHands(true);
     setEquipment(undefined);
     setIsLostModalOpen(false);
     setIsVictoryModalOpen(false);
@@ -180,6 +212,10 @@ const useHooks = () => {
     usedPotion,
     handleBareHandsClick,
     isVictoryModalOpen,
+    lifeDifference,
+    animateBattle,
+    animate,
+    prevLifeDifference,
   };
 };
 

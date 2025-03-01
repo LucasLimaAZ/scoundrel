@@ -85,3 +85,52 @@ export const disintegrationStyle = {
     },
   },
 };
+
+export const numberFadeStyle = {
+  transform: "translate(-50%, -50%)",
+  fontSize: "50px",
+  fontWeight: "bold",
+  opacity: 1,
+  animation: "fadeOut 1.5s ease-out forwards",
+  "@keyframes fadeOut": {
+    "0%": {
+      opacity: 1,
+      transform: "translate(-50%, 0)",
+    },
+    "100%": {
+      opacity: 0,
+      transform: "translate(-50%, -60%)",
+    },
+  },
+};
+
+export const movingCharacterStyle = {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  animation: "moveFade 0.4s forwards",
+  "@keyframes moveFade": {
+    "0%": {
+      transform: "translate(450px, -200px)",
+      fontSize: "4px",
+      opacity: 0,
+    },
+    "25%": {
+      opacity: 1,
+      fontSize: "64px",
+    },
+    "50%": {
+      opacity: 1,
+      fontSize: "100px",
+    },
+    "75%": {
+      opacity: 1,
+      fontSize: "64px",
+    },
+    "100%": {
+      transform: "translate(70vw, -550px)",
+      opacity: 0,
+      fontSize: "4px",
+    },
+  },
+};

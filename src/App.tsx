@@ -1,10 +1,15 @@
 import { Box, Button, Typography } from "@mui/material";
 import Room from "./components/Room";
 import useHooks from "./shared/hooks";
-import { suitEmote } from "./shared/helper";
+import {
+  movingCharacterStyle,
+  numberFadeStyle,
+  suitEmote,
+} from "./shared/helper";
 import LostDialog from "./components/LostDialog";
 import { useEffect } from "react";
 import VictoryDialog from "./components/VictoryDialog";
+import CountUp from "react-countup";
 
 function App() {
   const {
@@ -25,6 +30,9 @@ function App() {
     usedPotion,
     isVictoryModalOpen,
     handleBareHandsClick,
+    animate,
+    prevLifeDifference,
+    animateBattle,
   } = useHooks();
 
   useEffect(() => initializeDeck(), []);
@@ -63,7 +71,7 @@ function App() {
               onClick={scoopRoom}
               sx={{ fontSize: "24px", backgroundColor: "gray" }}
               variant="contained"
-              disabled={lastScoop || !room?.cards?.length}
+              disabled={lastScoop || !room || (room && room?.cards.length < 4)}
             >
               Run 💨
             </Button>
@@ -84,7 +92,33 @@ function App() {
           transition: "2s",
         }}
       >
-        <Box sx={{ fontSize: "48px" }}>❤️ {life}</Box>
+        <Box
+          sx={{
+            fontSize: "48px",
+            display: "flex",
+            alignItems: "baseline",
+            gap: "32px",
+          }}
+        >
+          <Box>
+            ❤️{" "}
+            <CountUp key={life} start={life - prevLifeDifference} end={life} />
+          </Box>
+          {animate && (
+            <Box
+              sx={{
+                ...numberFadeStyle,
+                color: Math.sign(prevLifeDifference) > 0 ? "green" : "red",
+                opacity: 1,
+                transition: "opacity 1.5s ease-out",
+                marginLeft: "16px",
+              }}
+            >
+              {Math.sign(prevLifeDifference) > 0 && "+"}
+              {prevLifeDifference}
+            </Box>
+          )}
+        </Box>
         {usedPotion && <Box sx={{ fontSize: "48px" }}>💖🕑</Box>}
         <Box sx={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <Box>
@@ -126,6 +160,11 @@ function App() {
       </Box>
       <LostDialog onClose={resetGame} open={!!isLostModalOpen} />
       <VictoryDialog onClose={resetGame} open={!!isVictoryModalOpen} />
+      {animateBattle && (
+        <Box sx={movingCharacterStyle}>
+          {bareHands ? "👊" : equipment?.emoji || "👊"}
+        </Box>
+      )}
     </Box>
   );
 }
