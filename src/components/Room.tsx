@@ -24,6 +24,11 @@ const Room = ({ room, activateCard }: RoomProps) => {
     }
   };
 
+  const handleCardHover = () => {
+    const audio = new Audio("assets/hover-2.wav");
+    audio.play();
+  }
+
   return (
     <Box>
       {room.cards.length > 0 && (
@@ -76,6 +81,7 @@ const Room = ({ room, activateCard }: RoomProps) => {
         {displayedCards.map((card, index) => (
           <Box
             onClick={() => handleCardClick(card)}
+            onMouseEnter={() => handleCardHover()}
             key={index}
             sx={{
               cursor: "pointer",

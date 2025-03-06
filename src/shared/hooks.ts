@@ -138,6 +138,8 @@ const useHooks = () => {
   };
 
   const heal = (card: Card) => {
+    const audio = new Audio("assets/heal.wav");
+    audio.play();
     const total = card.number + life;
     setLifeDifference(card.number);
     setLife(Math.min(total, 20));
