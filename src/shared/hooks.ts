@@ -20,6 +20,11 @@ const useHooks = () => {
   const [animate, setAnimate] = useState(false);
   const [prevLifeDifference, setPrevLifeDifference] = useState(0);
   const [scoopRefillTriggered, setScoopRefillTriggered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    setShowTooltip(true);
+  }, []);
 
   useEffect(() => {
     if (lifeDifference !== 0) {
@@ -218,6 +223,8 @@ const useHooks = () => {
     animateBattle,
     animate,
     prevLifeDifference,
+    showTooltip,
+    setShowTooltip,
   };
 };
 

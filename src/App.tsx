@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Tooltip, Typography, Link } from "@mui/material";
 import Room from "./components/Room";
 import useHooks from "./shared/hooks";
 import {
@@ -33,6 +33,8 @@ function App() {
     animate,
     prevLifeDifference,
     animateBattle,
+    showTooltip,
+    setShowTooltip,
   } = useHooks();
 
   useEffect(() => initializeDeck(), []);
@@ -42,13 +44,25 @@ function App() {
       sx={{
         backgroundColor: "#1a1a1a",
         color: "#e1e1e1",
-        minHeight: "92vh",
-        padding: "4% 2% 0 2%",
+        minHeight: "98vh",
+        padding: "1% 2% 0 2%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
       }}
     >
+      <Box sx={{ width: "100%", textAlign: "center", padding: 0 }}>
+        <Typography>
+          <Link
+            sx={{ color: "white", textDecoration: "none" }}
+            href="https://www.youtube.com/watch?v=Gt2tYzM93h4"
+            target="_blank"
+            rel="noopener"
+          >
+            How to play?
+          </Link>
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: "flex",
@@ -60,12 +74,20 @@ function App() {
           <Box>
             <Typography>Room: {roomCounter}</Typography>
           </Box>
-          <Box
-            onClick={handleDeckClick}
-            sx={{ fontSize: "48px", cursor: "pointer" }}
+          <Tooltip
+            open={showTooltip}
+            onClose={() => setShowTooltip(false)}
+            title="Click on the card to start"
+            placement="left"
+            arrow
           >
-            🎴 {remainingCards.length}
-          </Box>
+            <Box
+              onClick={handleDeckClick}
+              sx={{ fontSize: "48px", cursor: "pointer" }}
+            >
+              🎴 {remainingCards.length}
+            </Box>
+          </Tooltip>
           <Box sx={{ paddingTop: "16px" }}>
             <Button
               onClick={scoopRoom}
